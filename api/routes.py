@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.services.weather_service import get_weather_by_coords
-from app.services.geocoding_service import search_city
+from services.weather_service import get_weather_by_coords
+from services.geocoding_service import search_city
 
 api = Blueprint("api", __name__)
 
