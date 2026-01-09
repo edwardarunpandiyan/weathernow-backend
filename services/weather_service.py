@@ -13,8 +13,8 @@ def get_weather_by_coords(latitude, longitude):
         }
     )
 
-    if response.status_code != 200:
-        return {"error": "Weather data not found"}
+    # if response.status_code != 200:
+    #     return {"error": "Weather data not found"}
 
     data = response.json()
     current = data["current_weather"]
