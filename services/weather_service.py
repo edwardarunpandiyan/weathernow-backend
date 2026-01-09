@@ -1,5 +1,5 @@
 import requests
-from app.utils.weather_codes import WEATHER_CODE_MAP
+from utils.weather_codes import WEATHER_CODE_MAP
 
 WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 
