@@ -22,7 +22,11 @@ def search_city(name):
     results = []
     for city in data["results"]:
         results.append({
-            "name": f"{city['name']} / {city.get('admin1', '')} / {city['country']}",
+            "id": city['id'],
+            "name": city['name'],
+            "state": city.get('admin1', ''),
+            "country": city['country'],
+            "country_code": city['country_code'],
             "latitude": city["latitude"],
             "longitude": city["longitude"]
         })
