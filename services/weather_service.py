@@ -1,10 +1,15 @@
 import requests
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from utils.weather_codes import WEATHER_CODE_MAP
 
 WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 
 SHORT_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+
+def get_location_now(timezone_name: str) -> str:
+    return datetime.now(ZoneInfo(timezone_name)).isoformat()
 
 def degrees_to_compass(deg: float) -> str:
     directions = ["N","NE","E","SE","S","SW","W","NW"]
@@ -44,28 +49,9 @@ def parse_daily_weather(daily: dict) -> list:
             "maxTemp": max_temps[i],
             "minTemp": min_temps[i],
             "condition": WEATHER_CODE_MAP.get(codes[i], "Unknown"),
+            "weatherCode": codes[i],
         })
     return daily_data
-
-# def parse_hourly_weather(hourly: dict) -> list:
-#     if not hourly or not isinstance(hourly, dict):
-#         return []
-#     times = hourly.get("time", [])
-#     temps = hourly.get("temperature_2m", [])
-#     speeds = hourly.get("windspeed_10m", [])
-#     codes = hourly.get("weathercode", [])
-
-#     length = min(len(times), len(temps), len(speeds), len(codes))
-
-#     hourly_data = []
-#     for i in range(length):
-#         hourly_data.append({
-#             "date": times[i],
-#             "temperature": temps[i],
-#             "windspeed": speeds[i],
-#             "condition": WEATHER_CODE_MAP.get(codes[i], "Unknown"),
-#         })
-#     return hourly_data
 
 def parse_hourly_weather(hourly: dict, current_weather: dict) -> list:
     times = hourly.get("time", [])
@@ -76,6 +62,7 @@ def parse_hourly_weather(hourly: dict, current_weather: dict) -> list:
     codes = hourly.get("weathercode", [])
     wind_speeds = hourly.get("windspeed_10m", [])
     wind_dirs = hourly.get("winddirection_10m", [])
+    is_days = hourly.get("is_day", [])
 
     length = min(len(times), len(temps), len(feels), len(humidity),
                  len(precip), len(codes), len(wind_speeds), len(wind_dirs))
@@ -113,6 +100,7 @@ def parse_hourly_weather(hourly: dict, current_weather: dict) -> list:
             "hour": hour_dt.hour,
             "timeLabel": time_label,
             "condition": WEATHER_CODE_MAP.get(codes[i], "Unknown"),
+            "weatherCode": codes[i],
             "temp": round(temps[i]),
             "feelsLike": round(feels[i]),
             "windSpeed": round(wind_speeds[i]),
@@ -120,31 +108,33 @@ def parse_hourly_weather(hourly: dict, current_weather: dict) -> list:
             "wind": f"{round(wind_speeds[i])} km/h {wind_dir_compass}",
             "humidity": humidity[i],
             "precipitation": precip[i],
-            "isNow": is_now
+            "isNow": is_now,
+            "isDay": bool(is_days[i]) if is_days[i] is not None else None,
         })
 
     return hourly_data
 
 
-def parse_current_weather(current: dict) -> dict:
-    if not current or not isinstance(current, dict):
-        return {}
+# def parse_current_weather(current: dict) -> dict:
+#     if not current or not isinstance(current, dict):
+#         return {}
 
-    temperature = current.get("temperature")
-    weather_code = current.get("weathercode")
-    windspeed = current.get("windspeed")
-    winddirection = current.get("winddirection")
-    time = current.get("time")
-    is_day = current.get("is_day")
+#     temperature = current.get("temperature")
+#     weather_code = current.get("weathercode")
+#     windspeed = current.get("windspeed")
+#     winddirection = current.get("winddirection")
+#     time = current.get("time")
+#     is_day = current.get("is_day")
 
-    return {
-        "temperature": temperature,
-        "condition": WEATHER_CODE_MAP.get(weather_code, "Unknown"),
-        "windspeed": windspeed,
-        "winddirection": winddirection,
-        "time": time,
-        "is_day": bool(is_day) if is_day is not None else None,
-    }
+#     return {
+#         "temperature": temperature,
+#         "weatherCode": weather_code,
+#         "condition": WEATHER_CODE_MAP.get(weather_code, "Unknown"),
+#         "windSpeed": windspeed,
+#         "windDir": winddirection,
+#         "time": time,
+#         "isDay": bool(is_day) if is_day is not None else None,
+#     }
 
 def parse_weather_units(units: dict) -> dict:
     if not units or not isinstance(units, dict):
@@ -161,19 +151,6 @@ def parse_weather_units(units: dict) -> dict:
         }
 
 def get_weather_by_coords(latitude, longitude):
-    # response = requests.get(
-    #     WEATHER_URL,
-    #     params={
-    #         "latitude": latitude,
-    #         "longitude": longitude,
-    #         "current_weather": True,
-    #         "hourly": "temperature_2m,weathercode,windspeed_10m",
-    #         "daily": "temperature_2m_max,temperature_2m_min,weathercode",
-    #         "forecast_days": "7",
-    #         "timezone": "auto"
-    #     }
-    # )
-
     response = requests.get(
         WEATHER_URL,
         params={
@@ -188,6 +165,7 @@ def get_weather_by_coords(latitude, longitude):
                         "weathercode",
                         "windspeed_10m",
                         "winddirection_10m",
+                        "is_day"
                         ]),
             "daily": "temperature_2m_max,temperature_2m_min,weathercode",
             "forecast_days": "7",
@@ -211,9 +189,10 @@ def get_weather_by_coords(latitude, longitude):
         "data": {
             "latitude": data.get("latitude"),
             "longitude": data.get("longitude"),
-            "current": parse_current_weather(data.get("current_weather", {})),
+            # "current": parse_current_weather(data.get("current_weather", {})),
             "hourly": parse_hourly_weather(data.get("hourly", {}), data.get("current_weather", {})),
             "daily": parse_daily_weather(data.get("daily", {})),
             "units": parse_weather_units(data.get("current_weather_units", {})),
+            "locationNow": get_location_now(data.get("timezone"))
         }
     }
