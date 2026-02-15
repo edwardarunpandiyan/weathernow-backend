@@ -32,7 +32,7 @@ responses.
 ## 📂 Project Structure
 
     backend/
-    ├── app.py
+    ├── main.py
     ├── services/
     │   ├── weather_service.py
     │   └── geocoding_service.py
