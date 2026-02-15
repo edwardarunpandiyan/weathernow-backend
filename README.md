@@ -46,13 +46,21 @@ responses.
 
 ### City Suggestions
 
-    GET /city?name=villupuram
+    GET /city?name=london
 
 Response:
 
     {
       "data": [
-        { "name": "Villupuram / Tamil Nadu / India", "latitude": 12.9, "longitude": 79.1 }
+        {
+            "country": "United Kingdom",
+            "country_code": "GB",
+            "id": 2643743,
+            "latitude": 51.50853,
+            "longitude": -0.12574,
+            "name": "London",
+            "state": "England"
+        },
       ]
     }
 
@@ -60,25 +68,51 @@ Response:
 
 ### Weather Data
 
-    GET /weather?latitude=13&longitude=77.625
+    GET /weather?latitude=51&longitude=-0.12
 
 Response:
 
     {
       "data": {
-        "condition": "Mainly clear",
-        "temperature": 26.5,
-        "windspeed": 13.4,
-        "winddirection": 54,
-        "is_day": true,
-        "time": "2026-01-07T11:45",
+        "daily": [
+          {
+            "condition": "Light rain showers",
+            "date": "2026-02-15",
+            "day": "Sun",
+            "id": 1,
+            "maxTemp": 8.1,
+            "minTemp": 3,
+            "weatherCode": 80
+          }
+        ],    
+        "hourly": [
+          {
+            "condition": "Overcast",
+            "feelsLike": 0,
+            "hour": 0,
+            "humidity": 73,
+            "id": 0,
+            "isDay": false,
+            "isNow": false,
+            "precipitation": 0,
+            "temp": 3,
+            "timeLabel": "12:00 AM",
+            "weatherCode": 3,
+            "wind": "8 km/h S",
+            "windDir": "S",
+            "windSpeed": 8
+          }
+        ],
+        "latitude": 51,
+        "locationNow": "2026-02-15T06:35:50.372107+00:00",
+        "longitude": -0.120000124,
         "units": {
           "temperature": "°C",
-          "windspeed": "km/h",
-          "winddirection": "°"
+          "winddirection": "°",
+          "windspeed": "km/h"
         }
       }
-    }
+}
 
 ------------------------------------------------------------------------
 
@@ -92,7 +126,7 @@ Response:
 ### Installation
 
     pip install -r requirements.txt
-    python app.py
+    python main.py
 
 Server runs on:
 
